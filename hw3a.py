@@ -1,20 +1,3 @@
-#!/usr/bin/env python3
-"""
-hw3a.py
-
-This program computes probabilities from a normal distribution either by:
-  a) computing the probability given a c-value (using Simpson's 1/3 integration)
-  b) computing the corresponding c-value given a target probability using the Secant method.
-
-The program handles both one-sided and two-sided cases.
-For one-sided integration, the probability is computed as either P(x < c) or P(x > c).
-For two-sided integration, it computes either the central probability, i.e.,
-  P(μ – (c–μ) < x < μ + (c–μ)),
-or the tail probability (x outside that symmetric interval).
-
-This code uses the GPDF and Probability functions from numericalMethods.
-"""
-
 # region imports
 from numericalMethods import GPDF, Probability
 
@@ -113,14 +96,12 @@ def main():
             else:
                 GT = False  # default to central probability
 
-        # Ask user which mode they want:
+        # Ask user which mode they want
         mode = input(
             "Specify c and compute probability (enter 'c') OR specify probability and solve for c (enter 'p')? (default 'c'): ").strip().lower()
 
         if mode == "" or mode.startswith("c"):
-            # -----------------------
             # Mode 1: Given c, compute probability.
-            # -----------------------
             resp = input(f"Enter c value? (default {c:0.3f}): ").strip()
             if resp:
                 c = float(resp)
@@ -134,7 +115,7 @@ def main():
                 else:
                     print(f"\nResult: P(x < {c:0.3f} | μ = {mean:0.3f}, σ = {stDev:0.3f}) = {prob:0.5f}\n")
             else:
-                # For two-sided, interpret c as half-width around the mean.
+                # For two-sided, interpret c as half-width around the mean
                 lower = mean - (c - mean)
                 upper = mean + (c - mean)
                 if GT:
@@ -145,9 +126,7 @@ def main():
                         f"\nResult: P({lower:0.3f} < x < {upper:0.3f}) = {prob:0.5f} for N({mean:0.3f}, {stDev:0.3f})\n")
 
         else:
-            # -----------------------
             # Mode 2: Given a target probability, solve for c using the secant method.
-            # -----------------------
             target_str = input("Enter desired probability: ").strip()
             if target_str:
                 target_prob = float(target_str)
@@ -159,30 +138,30 @@ def main():
             def f(c_val):
                 return compute_probability(c_val, mean, stDev, OneSided, GT) - target_prob
 
-            # Choose two initial guesses for the secant method.
+            # Choose two initial guesses for the secant method
             # The monotonicity depends on the type of integration:
             if not GT:
-                # For one-sided P(x < c) or two-sided central probability: f(c) increases with c.
+                # For one-sided P(x < c) or two-sided central probability: f(c) increases with c
                 if OneSided:
                     c0 = mean - 5 * stDev
                     c1 = mean + 5 * stDev
                 else:
-                    # For two-sided central probability, note that at c=mean, the central interval is degenerate.
+                    # For two-sided central probability, note that at c=mean, the central interval is degenerate
                     c0 = mean
                     c1 = mean + 5 * stDev
             else:
-                # For one-sided P(x > c) or two-sided tail probability: f(c) decreases with c.
+                # For one-sided P(x > c) or two-sided tail probability: f(c) decreases with c
                 if OneSided:
                     c0 = mean + 5 * stDev
                     c1 = mean - 5 * stDev
                 else:
-                    # For two-sided tail probability, at c=mean the tails cover all probability.
+                    # For two-sided tail probability, at c=mean the tails cover all probability
                     c0 = mean + 5 * stDev
                     c1 = mean
 
-            # Call the secant method:
+            # Call the secant method
             c_solution = secant_method(f, c0, c1)
-            # Compute the probability at the solution (should be nearly equal to target_prob)
+            # Compute the probability at the solution
             prob = compute_probability(c_solution, mean, stDev, OneSided, GT)
 
             if OneSided:
@@ -202,7 +181,7 @@ def main():
                     print(
                         f"\nFound c = {c_solution:0.5f} such that P({lower:0.3f} < x < {upper:0.3f}) ≈ {prob:0.5f} (target {target_prob:0.5f}) for N({mean:0.3f}, {stDev:0.3f})\n")
 
-        # Ask if the user wants to run another calculation:
+        # Ask if the user wants to run another calculation
         resp = input("Run again? (y/n): ").strip().lower()
         if resp not in yesOptions:
             again = False
